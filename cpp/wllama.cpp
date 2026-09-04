@@ -115,6 +115,10 @@ extern "C" const char *wllama_action(const char *name, const char *req_raw)
     WLLAMA_ACTION(rerank)
     WLLAMA_ACTION(get_result)
     WLLAMA_ACTION(cancel)
+    WLLAMA_ACTION(raw_eval)
+    WLLAMA_ACTION(tokenize)
+    WLLAMA_ACTION(detokenize)
+    WLLAMA_ACTION(vocab)
     WLLAMA_ACTION(test_backend_ops)
 
     else

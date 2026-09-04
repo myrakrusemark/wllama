@@ -22,6 +22,10 @@ import type {
   GlueMsgRerankRes,
   GlueMsgGetResultRes,
   GlueMsgLoadRes,
+  GlueMsgRawEvalRes,
+  GlueMsgTokenizeRes,
+  GlueMsgDetokenizeRes,
+  GlueMsgVocabRes,
   GlueMsgTestBackendOpsRes,
 } from './glue/messages';
 import { LIBLLAMA_VERSION } from './workers-code/generated';
@@ -667,6 +671,99 @@ export class Wllama {
     }
 
     return await this.getResponse(options as any, false, result.req_id);
+  }
+
+  /**
+   * Feed tokens into the KV cache one llama_decode call at a time and return the full logit row of the last one.
+   * Uses the loaded model's context directly, so do not mix it with createCompletion on the same model.
+   * @param tokens Token ids to evaluate in order; pass [] with reset to only clear the cache
+   * @param options reset: clear the KV cache before evaluating
+   * @returns nPast (tokens now in the cache) and the logits, empty when no token was given
+   */
+  async rawEval(
+    tokens: number[],
+    options: { reset?: boolean } = {}
+  ): Promise<{ nPast: number; logits: Float32Array }> {
+    this.checkModelLoaded();
+
+    const result = await this.proxy.wllamaAction<GlueMsgRawEvalRes>('raw_eval', {
+      _name: 'revl_req',
+      reset: !!options.reset,
+      tokens,
+    });
+
+    if (!result.success) {
+      throw new WllamaError('raw_eval failed', 'inference_error');
+    }
+
+    // slice() gives a 4-byte aligned copy so the Float32Array view is valid
+    const bytes = result.logits.slice();
+    return {
+      nPast: result.n_past,
+      logits: new Float32Array(bytes.buffer, 0, bytes.byteLength / 4),
+    };
+  }
+
+  /**
+   * Tokenize text with the loaded model's own tokenizer. No BOS is added.
+   * @param text
+   * @param special Parse special token strings (e.g. <|im_end|>) as special tokens
+   */
+  async tokenize(text: string, special: boolean = false): Promise<number[]> {
+    this.checkModelLoaded();
+    const result = await this.proxy.wllamaAction<GlueMsgTokenizeRes>('tokenize', {
+      _name: 'tokn_req',
+      text,
+      special,
+    });
+    if (!result.success) {
+      throw new WllamaError('tokenize failed', 'inference_error');
+    }
+    return result.tokens;
+  }
+
+  /**
+   * Turn tokens back into bytes with the loaded model's own tokenizer.
+   * @param tokens
+   * @param special Render special tokens as text instead of dropping them
+   */
+  async detokenize(tokens: number[], special: boolean = false): Promise<Uint8Array> {
+    this.checkModelLoaded();
+    const result = await this.proxy.wllamaAction<GlueMsgDetokenizeRes>('detokenize', {
+      _name: 'dtkn_req',
+      tokens,
+      special,
+    });
+    if (!result.success) {
+      throw new WllamaError('detokenize failed', 'inference_error');
+    }
+    return result.text;
+  }
+
+  /**
+   * The whole vocabulary as byte pieces, plus the end-of-generation token ids, in one call.
+   * @param special Render special tokens as text instead of empty pieces
+   */
+  async getVocab(special: boolean = false): Promise<{
+    nVocab: number;
+    tokenEos: number;
+    listTokensEog: number[];
+    pieces: Uint8Array[];
+  }> {
+    this.checkModelLoaded();
+    const result = await this.proxy.wllamaAction<GlueMsgVocabRes>('vocab', {
+      _name: 'vocb_req',
+      special,
+    });
+    if (!result.success) {
+      throw new WllamaError('vocab failed', 'inference_error');
+    }
+    return {
+      nVocab: result.n_vocab,
+      tokenEos: result.token_eos,
+      listTokensEog: result.list_tokens_eog,
+      pieces: result.pieces,
+    };
   }
 
   /**

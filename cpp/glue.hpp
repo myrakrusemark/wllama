@@ -680,3 +680,70 @@ struct glue_msg_test_backend_ops_res
   GLUE_FIELD(int, retcode)
   GLUE_FIELD(bool, success)
 };
+
+/////////
+
+struct glue_msg_raw_eval_req
+{
+  GLUE_HANDLER("revl_req")
+  GLUE_FIELD(bool, reset)
+  GLUE_FIELD(arr_int, tokens)
+};
+
+struct glue_msg_raw_eval_res
+{
+  GLUE_HANDLER("revl_res")
+  GLUE_FIELD(bool, success)
+  GLUE_FIELD(int, n_past)
+  GLUE_FIELD(raw, logits)
+};
+
+/////////
+
+struct glue_msg_tokenize_req
+{
+  GLUE_HANDLER("tokn_req")
+  GLUE_FIELD(str, text)
+  GLUE_FIELD(bool, special)
+};
+
+struct glue_msg_tokenize_res
+{
+  GLUE_HANDLER("tokn_res")
+  GLUE_FIELD(bool, success)
+  GLUE_FIELD(arr_int, tokens)
+};
+
+/////////
+
+struct glue_msg_detokenize_req
+{
+  GLUE_HANDLER("dtkn_req")
+  GLUE_FIELD(arr_int, tokens)
+  GLUE_FIELD(bool, special)
+};
+
+struct glue_msg_detokenize_res
+{
+  GLUE_HANDLER("dtkn_res")
+  GLUE_FIELD(bool, success)
+  GLUE_FIELD(raw, text)
+};
+
+/////////
+
+struct glue_msg_vocab_req
+{
+  GLUE_HANDLER("vocb_req")
+  GLUE_FIELD(bool, special)
+};
+
+struct glue_msg_vocab_res
+{
+  GLUE_HANDLER("vocb_res")
+  GLUE_FIELD(bool, success)
+  GLUE_FIELD(int, n_vocab)
+  GLUE_FIELD(int, token_eos)
+  GLUE_FIELD(arr_int, list_tokens_eog)
+  GLUE_FIELD(arr_raw, pieces)
+};

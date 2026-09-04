@@ -831,6 +831,81 @@ struct wllama_context
     return res;
   }
 
+  // feed tokens straight into the KV cache, one llama_decode per token, and return the full logit row of the last one
+  // this bypasses the server task queue and reuses its context, so do not mix it with completion on the same model
+  glue_msg_raw_eval_res action_raw_eval(const char *req_raw)
+  {
+    PARSE_REQ(glue_msg_raw_eval_req);
+    glue_msg_raw_eval_res res;
+
+    llama_memory_t mem = llama_get_memory(ctx);
+    if (req.reset.value)
+    {
+      llama_memory_clear(mem, true);
+    }
+
+    for (llama_token tok : req.tokens.arr)
+    {
+      llama_batch batch = llama_batch_get_one(&tok, 1);
+      if (llama_decode(ctx, batch) != 0)
+      {
+        throw app_exception("raw_eval: llama_decode failed");
+      }
+    }
+
+    if (!req.tokens.arr.empty())
+    {
+      const float *logits = llama_get_logits_ith(ctx, -1);
+      const char *bytes = (const char *)logits;
+      res.logits.buf.assign(bytes, bytes + sizeof(float) * llama_vocab_n_tokens(vocab));
+    }
+
+    res.n_past.value = llama_memory_seq_pos_max(mem, 0) + 1;
+    res.success.value = true;
+    return res;
+  }
+
+  glue_msg_tokenize_res action_tokenize(const char *req_raw)
+  {
+    PARSE_REQ(glue_msg_tokenize_req);
+    glue_msg_tokenize_res res;
+    res.tokens.arr = common_tokenize(vocab, req.text.value, false, req.special.value);
+    res.success.value = true;
+    return res;
+  }
+
+  glue_msg_detokenize_res action_detokenize(const char *req_raw)
+  {
+    PARSE_REQ(glue_msg_detokenize_req);
+    glue_msg_detokenize_res res;
+    std::string text = common_detokenize(vocab, req.tokens.arr, req.special.value);
+    res.text.buf.assign(text.begin(), text.end());
+    res.success.value = true;
+    return res;
+  }
+
+  // every token's piece in one message, so the caller can render tokens without a round trip per token
+  glue_msg_vocab_res action_vocab(const char *req_raw)
+  {
+    PARSE_REQ(glue_msg_vocab_req);
+    glue_msg_vocab_res res;
+    const int n_vocab = llama_vocab_n_tokens(vocab);
+    res.pieces.arr.reserve(n_vocab);
+    for (int i = 0; i < n_vocab; i++)
+    {
+      std::string piece = common_token_to_piece(vocab, i, req.special.value);
+      res.pieces.arr.emplace_back(piece.begin(), piece.end());
+      if (llama_vocab_is_eog(vocab, i))
+      {
+        res.list_tokens_eog.arr.push_back(i);
+      }
+    }
+    res.n_vocab.value = n_vocab;
+    res.token_eos.value = llama_vocab_eos(vocab);
+    res.success.value = true;
+    return res;
+  }
+
   glue_msg_test_backend_ops_res action_test_backend_ops(const char *req_raw)
   {
     PARSE_REQ(glue_msg_test_backend_ops_req);

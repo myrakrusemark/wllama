@@ -119,7 +119,8 @@ const getWModuleConfig = (_argMainScriptBlob) => {
 //      https://github.com/godotengine/godot/issues/70621
 const getWasmMemory = () => {
   let minBytes = 128 * 1024 * 1024;
-  let maxBytes = 4096 * 1024 * 1024;
+  // wasm32 stops at 4 GiB; memory64 can go further, the loop below steps down until the browser accepts it
+  let maxBytes = (isCompat ? 4096 : 8192) * 1024 * 1024;
   let stepBytes = 128 * 1024 * 1024;
   while (maxBytes > minBytes) {
     try {

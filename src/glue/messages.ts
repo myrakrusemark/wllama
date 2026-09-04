@@ -645,6 +645,157 @@ export const GLUE_MESSAGE_PROTOTYPES: { [name: string]: GlueMessageProto } = {
         "isNullable": false
       }
     ]
+  },
+  "revl_req": {
+    "name": "revl_req",
+    "structName": "glue_msg_raw_eval_req",
+    "className": "GlueMsgRawEvalReq",
+    "fields": [
+      {
+        "type": "bool",
+        "name": "reset",
+        "isNullable": false
+      },
+      {
+        "type": "arr_int",
+        "name": "tokens",
+        "isNullable": false
+      }
+    ]
+  },
+  "revl_res": {
+    "name": "revl_res",
+    "structName": "glue_msg_raw_eval_res",
+    "className": "GlueMsgRawEvalRes",
+    "fields": [
+      {
+        "type": "bool",
+        "name": "success",
+        "isNullable": false
+      },
+      {
+        "type": "int",
+        "name": "n_past",
+        "isNullable": false
+      },
+      {
+        "type": "raw",
+        "name": "logits",
+        "isNullable": false
+      }
+    ]
+  },
+  "tokn_req": {
+    "name": "tokn_req",
+    "structName": "glue_msg_tokenize_req",
+    "className": "GlueMsgTokenizeReq",
+    "fields": [
+      {
+        "type": "str",
+        "name": "text",
+        "isNullable": false
+      },
+      {
+        "type": "bool",
+        "name": "special",
+        "isNullable": false
+      }
+    ]
+  },
+  "tokn_res": {
+    "name": "tokn_res",
+    "structName": "glue_msg_tokenize_res",
+    "className": "GlueMsgTokenizeRes",
+    "fields": [
+      {
+        "type": "bool",
+        "name": "success",
+        "isNullable": false
+      },
+      {
+        "type": "arr_int",
+        "name": "tokens",
+        "isNullable": false
+      }
+    ]
+  },
+  "dtkn_req": {
+    "name": "dtkn_req",
+    "structName": "glue_msg_detokenize_req",
+    "className": "GlueMsgDetokenizeReq",
+    "fields": [
+      {
+        "type": "arr_int",
+        "name": "tokens",
+        "isNullable": false
+      },
+      {
+        "type": "bool",
+        "name": "special",
+        "isNullable": false
+      }
+    ]
+  },
+  "dtkn_res": {
+    "name": "dtkn_res",
+    "structName": "glue_msg_detokenize_res",
+    "className": "GlueMsgDetokenizeRes",
+    "fields": [
+      {
+        "type": "bool",
+        "name": "success",
+        "isNullable": false
+      },
+      {
+        "type": "raw",
+        "name": "text",
+        "isNullable": false
+      }
+    ]
+  },
+  "vocb_req": {
+    "name": "vocb_req",
+    "structName": "glue_msg_vocab_req",
+    "className": "GlueMsgVocabReq",
+    "fields": [
+      {
+        "type": "bool",
+        "name": "special",
+        "isNullable": false
+      }
+    ]
+  },
+  "vocb_res": {
+    "name": "vocb_res",
+    "structName": "glue_msg_vocab_res",
+    "className": "GlueMsgVocabRes",
+    "fields": [
+      {
+        "type": "bool",
+        "name": "success",
+        "isNullable": false
+      },
+      {
+        "type": "int",
+        "name": "n_vocab",
+        "isNullable": false
+      },
+      {
+        "type": "int",
+        "name": "token_eos",
+        "isNullable": false
+      },
+      {
+        "type": "arr_int",
+        "name": "list_tokens_eog",
+        "isNullable": false
+      },
+      {
+        "type": "arr_raw",
+        "name": "pieces",
+        "isNullable": false
+      }
+    ]
   }
 };
 
@@ -830,5 +981,64 @@ export interface GlueMsgTestBackendOpsRes {
   success: boolean;
 }
 
+// struct glue_msg_raw_eval_req
+export interface GlueMsgRawEvalReq {
+  _name: "revl_req";
+  reset: boolean;
+  tokens: number[];
+}
 
-export type GlueMsg = GlueMsgError | GlueMsgLoadReq | GlueMsgLoadRes | GlueMsgCompletionReq | GlueMsgCompletionRes | GlueMsgEmbeddingReq | GlueMsgEmbeddingRes | GlueMsgRerankReq | GlueMsgRerankRes | GlueMsgGetResultReq | GlueMsgGetResultRes | GlueMsgCancelReq | GlueMsgCancelRes | GlueMsgTestBackendOpsReq | GlueMsgTestBackendOpsRes;
+// struct glue_msg_raw_eval_res
+export interface GlueMsgRawEvalRes {
+  _name: "revl_res";
+  success: boolean;
+  n_past: number;
+  logits: Uint8Array;
+}
+
+// struct glue_msg_tokenize_req
+export interface GlueMsgTokenizeReq {
+  _name: "tokn_req";
+  text: string;
+  special: boolean;
+}
+
+// struct glue_msg_tokenize_res
+export interface GlueMsgTokenizeRes {
+  _name: "tokn_res";
+  success: boolean;
+  tokens: number[];
+}
+
+// struct glue_msg_detokenize_req
+export interface GlueMsgDetokenizeReq {
+  _name: "dtkn_req";
+  tokens: number[];
+  special: boolean;
+}
+
+// struct glue_msg_detokenize_res
+export interface GlueMsgDetokenizeRes {
+  _name: "dtkn_res";
+  success: boolean;
+  text: Uint8Array;
+}
+
+// struct glue_msg_vocab_req
+export interface GlueMsgVocabReq {
+  _name: "vocb_req";
+  special: boolean;
+}
+
+// struct glue_msg_vocab_res
+export interface GlueMsgVocabRes {
+  _name: "vocb_res";
+  success: boolean;
+  n_vocab: number;
+  token_eos: number;
+  list_tokens_eog: number[];
+  pieces: Uint8Array[];
+}
+
+
+export type GlueMsg = GlueMsgError | GlueMsgLoadReq | GlueMsgLoadRes | GlueMsgCompletionReq | GlueMsgCompletionRes | GlueMsgEmbeddingReq | GlueMsgEmbeddingRes | GlueMsgRerankReq | GlueMsgRerankRes | GlueMsgGetResultReq | GlueMsgGetResultRes | GlueMsgCancelReq | GlueMsgCancelRes | GlueMsgTestBackendOpsReq | GlueMsgTestBackendOpsRes | GlueMsgRawEvalReq | GlueMsgRawEvalRes | GlueMsgTokenizeReq | GlueMsgTokenizeRes | GlueMsgDetokenizeReq | GlueMsgDetokenizeRes | GlueMsgVocabReq | GlueMsgVocabRes;
