@@ -23,6 +23,7 @@ import type {
   GlueMsgGetResultRes,
   GlueMsgLoadRes,
   GlueMsgRawEvalRes,
+  GlueMsgKvShiftRes,
   GlueMsgTokenizeRes,
   GlueMsgDetokenizeRes,
   GlueMsgVocabRes,
@@ -702,6 +703,27 @@ export class Wllama {
       nPast: result.n_past,
       logits: new Float32Array(bytes.buffer, 0, bytes.byteLength / 4),
     };
+  }
+
+  /**
+   * Slide the KV cache: keep the first nKeep positions, drop the next nDiscard,
+   * and shift the rest back. A writer and a reader that make the same calls in
+   * the same order keep identical logits, which is what a windowed watermark needs.
+   * @returns nPast (tokens now in the cache)
+   */
+  async kvShift(options: { nKeep: number; nDiscard: number }): Promise<{ nPast: number }> {
+    this.checkModelLoaded();
+
+    const result = await this.proxy.wllamaAction<GlueMsgKvShiftRes>('kv_shift', {
+      _name: 'kvsh_req',
+      n_keep: options.nKeep,
+      n_discard: options.nDiscard,
+    });
+
+    if (!result.success) {
+      throw new WllamaError('kv_shift failed', 'inference_error');
+    }
+    return { nPast: result.n_past };
   }
 
   /**

@@ -685,6 +685,40 @@ export const GLUE_MESSAGE_PROTOTYPES: { [name: string]: GlueMessageProto } = {
       }
     ]
   },
+  "kvsh_req": {
+    "name": "kvsh_req",
+    "structName": "glue_msg_kv_shift_req",
+    "className": "GlueMsgKvShiftReq",
+    "fields": [
+      {
+        "type": "int",
+        "name": "n_keep",
+        "isNullable": false
+      },
+      {
+        "type": "int",
+        "name": "n_discard",
+        "isNullable": false
+      }
+    ]
+  },
+  "kvsh_res": {
+    "name": "kvsh_res",
+    "structName": "glue_msg_kv_shift_res",
+    "className": "GlueMsgKvShiftRes",
+    "fields": [
+      {
+        "type": "bool",
+        "name": "success",
+        "isNullable": false
+      },
+      {
+        "type": "int",
+        "name": "n_past",
+        "isNullable": false
+      }
+    ]
+  },
   "tokn_req": {
     "name": "tokn_req",
     "structName": "glue_msg_tokenize_req",
@@ -996,6 +1030,20 @@ export interface GlueMsgRawEvalRes {
   logits: Uint8Array;
 }
 
+// struct glue_msg_kv_shift_req
+export interface GlueMsgKvShiftReq {
+  _name: "kvsh_req";
+  n_keep: number;
+  n_discard: number;
+}
+
+// struct glue_msg_kv_shift_res
+export interface GlueMsgKvShiftRes {
+  _name: "kvsh_res";
+  success: boolean;
+  n_past: number;
+}
+
 // struct glue_msg_tokenize_req
 export interface GlueMsgTokenizeReq {
   _name: "tokn_req";
@@ -1041,4 +1089,4 @@ export interface GlueMsgVocabRes {
 }
 
 
-export type GlueMsg = GlueMsgError | GlueMsgLoadReq | GlueMsgLoadRes | GlueMsgCompletionReq | GlueMsgCompletionRes | GlueMsgEmbeddingReq | GlueMsgEmbeddingRes | GlueMsgRerankReq | GlueMsgRerankRes | GlueMsgGetResultReq | GlueMsgGetResultRes | GlueMsgCancelReq | GlueMsgCancelRes | GlueMsgTestBackendOpsReq | GlueMsgTestBackendOpsRes | GlueMsgRawEvalReq | GlueMsgRawEvalRes | GlueMsgTokenizeReq | GlueMsgTokenizeRes | GlueMsgDetokenizeReq | GlueMsgDetokenizeRes | GlueMsgVocabReq | GlueMsgVocabRes;
+export type GlueMsg = GlueMsgError | GlueMsgLoadReq | GlueMsgLoadRes | GlueMsgCompletionReq | GlueMsgCompletionRes | GlueMsgEmbeddingReq | GlueMsgEmbeddingRes | GlueMsgRerankReq | GlueMsgRerankRes | GlueMsgGetResultReq | GlueMsgGetResultRes | GlueMsgCancelReq | GlueMsgCancelRes | GlueMsgTestBackendOpsReq | GlueMsgTestBackendOpsRes | GlueMsgRawEvalReq | GlueMsgRawEvalRes | GlueMsgKvShiftReq | GlueMsgKvShiftRes | GlueMsgTokenizeReq | GlueMsgTokenizeRes | GlueMsgDetokenizeReq | GlueMsgDetokenizeRes | GlueMsgVocabReq | GlueMsgVocabRes;

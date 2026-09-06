@@ -865,6 +865,28 @@ struct wllama_context
     return res;
   }
 
+  // slide the KV cache: keep the first n_keep positions, drop the next
+  // n_discard, shift the rest back by n_discard. The writer and the reader
+  // make the same calls in the same order, so their logits stay identical.
+  glue_msg_kv_shift_res action_kv_shift(const char *req_raw)
+  {
+    PARSE_REQ(glue_msg_kv_shift_req);
+    glue_msg_kv_shift_res res;
+
+    llama_memory_t mem = llama_get_memory(ctx);
+    const int n_keep = req.n_keep.value;
+    const int n_discard = req.n_discard.value;
+    if (n_discard > 0)
+    {
+      llama_memory_seq_rm(mem, 0, n_keep, n_keep + n_discard);
+      llama_memory_seq_add(mem, 0, n_keep + n_discard, -1, -n_discard);
+    }
+
+    res.n_past.value = llama_memory_seq_pos_max(mem, 0) + 1;
+    res.success.value = true;
+    return res;
+  }
+
   glue_msg_tokenize_res action_tokenize(const char *req_raw)
   {
     PARSE_REQ(glue_msg_tokenize_req);

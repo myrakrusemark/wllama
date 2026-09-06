@@ -698,6 +698,20 @@ struct glue_msg_raw_eval_res
   GLUE_FIELD(raw, logits)
 };
 
+struct glue_msg_kv_shift_req
+{
+  GLUE_HANDLER("kvsh_req")
+  GLUE_FIELD(int, n_keep)
+  GLUE_FIELD(int, n_discard)
+};
+
+struct glue_msg_kv_shift_res
+{
+  GLUE_HANDLER("kvsh_res")
+  GLUE_FIELD(bool, success)
+  GLUE_FIELD(int, n_past)
+};
+
 /////////
 
 struct glue_msg_tokenize_req
